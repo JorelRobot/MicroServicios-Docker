@@ -18,7 +18,5 @@ public class CatalogService : ICatalogService
         Products = database.GetCollection<Product>
             (configuration.GetValue<string>("DatabaseSettings:CollectionName"));
     }
-
-
 }
 
