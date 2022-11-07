@@ -15,6 +15,25 @@ namespace Ordering.Infrastructure.Repositories
             this.orderContext = orderContext;
         }
 
+        public async Task<T> AddAsync(T entity)
+        {
+            await orderContext.AddAsync(entity);
+            await orderContext.SaveChangesAsync();
+
+            return entity;
+        }
+
+        public async Task DeleteAsync(T entity)
+        {
+            orderContext.Set<T>().Remove(entity);
+            await orderContext.SaveChangesAsync();
+        }
+
+        public async Task<IReadOnlyList<T>> GetAllAsync()
+        {
+            return await orderContext.Set<T>().ToListAsync();
+        }
+
         public async Task<IReadOnlyList<T>> GetAsync(Expression<Func<T, bool>> predicate)
             => await orderContext.Set<T>().ToListAsync();
 
@@ -40,6 +59,49 @@ namespace Ordering.Infrastructure.Repositories
 
             /// Retornamos el resultado
             return await query.ToListAsync();
+        }
+
+        public async Task<T> GetByIdAsync(int id)
+        {
+            /*
+             * First o FirstOrDefault son como un SELECT TOP 1
+             *
+             * Estos se usan comunmente cuando queremos el primer dato no
+             * importa que haya mas
+             */
+            /*
+            var entity = await orderContext.Set<T>().FirstOrDefaultAsync(x => x.Id == id);
+
+            var entity = await orderContext.Set<T>().FirstAsync(x => x.Id == id);
+            */
+
+            /*
+             * Single o SingleOrDefault son como un SELECT TOP 2
+             * 
+             * Son comunmente usados cuando busquemos datos que queremos 
+             * asegurarnos que siempre sean unicos con la convinacion que 
+             * estemos mandano
+             */
+            /*
+            var entity = await orderContext.Set<T>().SingleOrDefaultAsync(x => x.Id == id);
+
+            var entity = await orderContext.Set<T>().SingleAsync(x => x.Id == id);
+            */
+
+            /*
+             * Find se susa cuando se busca por llave primaria
+             */
+            var entity = await orderContext.Set<T>().FindAsync(id);
+
+            return entity;
+        }
+
+        public async Task<T> UpdateAsync(T entity)
+        {
+            orderContext.Entry(entity).State = EntityState.Modified;
+            await orderContext.SaveChangesAsync();
+
+            return entity;
         }
     }
 }
